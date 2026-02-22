@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мониторинг</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1>Текущий показатель: <span id="value">---</span></h1>
+
+    <script>
+        async function fetchValue() {
+            const response = await fetch("http://localhost:5000/api/latest");
+            const data = await response.json();
+            document.getElementById("value").innerText = data.value ?? "---";
+        }
+
+        setInterval(fetchValue, 1000);
+        fetchValue();
+    </script>
+</body>
+</html>
