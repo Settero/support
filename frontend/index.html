@@ -3,22 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мониторинг</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
-</head>
-<body>
-    <h1>Текущий показатель: <span id="value">---</span></h1>
-
-    <script>
-        async function fetchValue() {
-            const response = await fetch("/api/latest");
-            const data = await response.json();
-            document.getElementById("value").innerText = data.value ?? "---";
+    <title>Мониторинг вентиляции</title>
+    <style>
+        :root {
+            --bg: #eef6f3;
+            --panel: #ffffff;
+            --text: #16302b;
+            --muted: #5d756f;
+            --accent: #1f8a70;
+            --border: #cfe1da;
         }
 
-        setInterval(fetchValue, 1000);
-        fetchValue();
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            padding: 32px 16px;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, #d7efe5 0, transparent 35%),
+                linear-gradient(180deg, #f8fcfb 0%, var(--bg) 100%);
+        }
+
+        .dashboard {
+            width: min(960px, 100%);
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            margin: 0 0 8px;
+            font-size: clamp(28px, 4vw, 40px);
+        }
+
+        .header p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: var(--panel);
+            box-shadow: 0 10px 30px rgba(31, 138, 112, 0.08);
+        }
+
+        .card h2 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            text-transform: capitalize;
+        }
+
+        .meta,
+        .timestamp,
+        .empty {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .value {
+            margin: 12px 0 6px;
+            font-size: 34px;
+            font-weight: 700;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #e5f5ef;
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <main class="dashboard">
+        <div class="header">
+            <h1>Мониторинг вентиляции</h1>
+            <p>Последние полученные показания датчиков из эмулятора.</p>
+        </div>
+        <section id="grid" class="grid">
+            <div class="card empty">Ожидание данных от backend...</div>
+        </section>
+    </main>
+
+    <script>
+        function renderItems(items) {
+            const grid = document.getElementById("grid");
+
+            if (!items.length) {
+                grid.innerHTML = '<div class="card empty">Данные ещё не поступили.</div>';
+                return;
+            }
+
+            grid.innerHTML = items.map((item) => `
+                <article class="card">
+                    <div class="meta">${item.room_id}</div>
+                    <h2>${item.sensor_type}</h2>
+                    <div class="value">${item.value} ${item.unit}</div>
+                    <div class="status">${item.status}</div>
+                    <p class="timestamp">${new Date(item.timestamp).toLocaleString("ru-RU")}</p>
+                </article>
+            `).join("");
+        }
+
+        async function fetchTelemetry() {
+            const response = await fetch("/api/latest");
+            const data = await response.json();
+            renderItems(data.items ?? []);
+        }
+
+        setInterval(fetchTelemetry, 1000);
+        fetchTelemetry();
     </script>
 </body>
 </html>

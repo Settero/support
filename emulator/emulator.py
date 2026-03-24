@@ -14,8 +14,8 @@ import requests
 # 4. Все комнаты, датчики, интервалы и сценарии задаются константами ниже.
 # =========================
 
-BACKEND_BASE_URL = "http://localhost:5000"
-API_PATH = "/api/latest"
+BACKEND_BASE_URL = "http://backend:5000"
+API_PATH = "/api/telemetry"
 REQUEST_TIMEOUT = 5
 RETRY_COUNT = 3
 RETRY_DELAY_SECONDS = 2
